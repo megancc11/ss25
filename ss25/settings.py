@@ -55,7 +55,7 @@ ROOT_URLCONF = 'ss25.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates']
+        'DIRS': []
         ,
         'APP_DIRS': True,
         'OPTIONS': {
@@ -114,9 +114,27 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
-
+STATIC_URL = '/static/'
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
-STATIC_URL = '/static/'
+
+# ##########sms############
+
+#腾讯云短信皮用的app_id
+TENCENT_SMS_APP_ID =6666666666
+#腾讯云短信应用的 app_key
+TENCENT_SMS_APP_KEY="6666666666666666666666"
+# 腾讯云短信签名内容
+TENCENT_SMS_SIGN ="**********"
+
+
+
+#自己的短信模板
+SMS=0
+
+try:
+    from .local_settings import *
+except ImportError:
+    pass
