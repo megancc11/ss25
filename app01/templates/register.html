@@ -1,0 +1,54 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>注册信息</title>
+    <link rel="stylesheet" href="{% static 'plugins/bootstrap-3.4.1/css/bootstrap.min.css' %}">
+    <style>
+        .navbar {
+            border-radius: 0;
+        }
+
+        .account {
+            width: 600px;
+            border: 1px solid #dddddd;
+            border-radius: 5px; /*圆角*/
+            box-shadow: 10px 10px 20px #aaa; /*阴影设置*/
+            margin-left: auto; /*居中*/
+            margin-right: auto;
+            margin-top: 100px;
+            padding: 28px 40px; /*内边距*/
+        }
+
+        .account h3 {
+            text-align: center;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+<div class="account">
+    <h3 style="text-align: center">注册</h3>
+    <form>
+        {% for field in form %}
+            {% if field.name == 'code' %}
+                <div class="form-group">
+                <label for="{{ field.id_for_label }}">{{ field.label }}:</label>
+                <div class="clearfix">
+                    <div class="col-md-6" style="padding-left: 0;" >   {{ field }}</div>
+                    <div class="col-md-6"><input type="submit" class="btn btn-primary" value="点击获取邮件验证码"></div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}:</label>
+                    {{ field }}
+                </div>
+            {% endif %}
+        {% endfor %}
+        <button type="submit" class="btn btn-primary">注 册</button>
+    </form>
+</div>
+</body>
+</html>

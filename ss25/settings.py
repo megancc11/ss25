@@ -124,18 +124,18 @@ STATIC_URL = '/static/'
 
 #腾讯云短信皮用的app_id
 TENCENT_SMS_APP_ID =6666666666
+
 #腾讯云短信应用的 app_key
 TENCENT_SMS_APP_KEY="6666666666666666666666"
+
 # 腾讯云短信签名内容
 TENCENT_SMS_SIGN ="**********"
+
+# 短信模板
 TENCENT_SMS_TEMPLATE={
-    'register':88888,
-    'login':666666
+    'register':2081647,
+    'login':2081645
 }
-
-
-#自己的短信模板
-SMS=0
 
 try:
     from .local_settings import *

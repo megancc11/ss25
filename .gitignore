@@ -14,5 +14,7 @@ local_settings.py
 */migrations/*.py
 !*/migrations/__init__.py
 
+requirements.txt
+
 
 venv/
