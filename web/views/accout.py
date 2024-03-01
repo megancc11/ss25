@@ -7,6 +7,10 @@ from django.core.exceptions import ValidationError
 from django import forms
 from web import models
 
+"""
+用户账户相关功能：注册、登录、短信、注销
+"""
+
 def send_sms(request):
     """发送短信
     ?tpl=login ->1111
@@ -51,5 +55,5 @@ class RegisterModelForm(forms.ModelForm):
 
 def register(request):
     form = RegisterModelForm()
-    return render(request, 'register.html', {'form': form})
+    return render(request, 'web/register.html', {'form': form})
 

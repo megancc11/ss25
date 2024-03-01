@@ -1,15 +1,8 @@
+{% extends 'web/layout/basic.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>注册信息</title>
-    <link rel="stylesheet" href="{% static 'plugins/bootstrap-3.4.1/css/bootstrap.min.css' %}">
-    <style>
-        .navbar {
-            border-radius: 0;
-        }
-
+{% block head %}
+    {% block title %}用户注册{% endblock %}
+{#    <style>#}
         .account {
             width: 400px;
             border: 1px solid #dddddd;
@@ -26,8 +19,9 @@
             margin-top: 10px;
         }
     </style>
-</head>
-<body>
+{% endblock%}
+{% block content %}
+        <div class="container">
 <div class="account">
     <h3 style="text-align: center">注册</h3>
     <form>
@@ -50,5 +44,5 @@
         <button type="submit" class="btn btn-primary">注 册</button>
     </form>
 </div>
-</body>
-</html>
+        </div>
+{% endblock %}
