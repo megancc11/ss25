@@ -15,11 +15,14 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from app01 import views
+from web import views
+from web import redis_option
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('sms/send/', views.send_sms),
-    path('app01/register/', views.register),
-    path('app01/redis/', views.redis_option),
+    path('register/', views.register),
+    path('redis/', redis_option.redis),
+    path('redis_connectionpool/', redis_option.redis_connectionpool),
+    path('django_redis/', redis_option.django_redis),
 ]

@@ -5,16 +5,14 @@ from django.conf import settings
 from django.core.validators import RegexValidator
 from django.core.exceptions import ValidationError
 from django import forms
-from app01 import models
-import redis
-
+from web import models
 
 def send_sms(request):
     """发送短信
     ?tpl=login ->1111
     ?tpl=register ->2222
     http://127.0.0.1:8000/sms/send/?tpl=login
-    签名未通过
+    签名未通过，无法用腾讯短信发送功能
     """
     tpl = request.GET.get('tpl')
     template_id = settings.TENCENT_SMS_TEMPLATE.get(tpl)
@@ -51,21 +49,7 @@ class RegisterModelForm(forms.ModelForm):
                     "placeholder": '请输入%s'%(field.label,)
                 }
 
-
-
 def register(request):
     form = RegisterModelForm()
     return render(request, 'register.html', {'form': form})
 
-def redis_option(request):
-
-    # 直接连接redis
-    conn = redis.Redis(host='127.0.0.1', port=6379, password='123456', encoding='utf-8')
-
-    # 设置键值:15131255089=“9999”且超时时间为10秒(值写入到redis时会自动转字符串)
-    conn.set('15131255089',9999,ex=60)
-
-    # 根据键获取值:如果存在获取值(获取到的是字节类型);不存在则返回None
-    value = conn.get('15131255089')
-    print(value)
-    return HttpResponse(value)

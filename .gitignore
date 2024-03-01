@@ -16,5 +16,6 @@ local_settings.py
 
 requirements.txt
 
+.gitignore
 
 venv/
