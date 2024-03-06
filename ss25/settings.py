@@ -48,6 +48,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'web.middleware.auth.AuthMiddleware'
+
 ]
 
 ROOT_URLCONF = 'ss25.urls'
@@ -119,6 +121,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 STATIC_URL = '/static/'
 
+MEDIA_URL ='/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR,'media')
 
 # ##########sms############
 
@@ -137,6 +141,22 @@ TENCENT_SMS_TEMPLATE={
     'login':2081645
 }
 
+#腾讯邮件发送设置
+MAIL_HOST = "***"  # 默认，设置服务器
+MAIL_USER = "***"  # 用户名
+MAIL_PASSWORD = "***"  # 服务器授权码
+
+
+# ########### 登录白名单：无需登录就可以访问的页面 ###########
+WHITE_REGEX_URL_LIST = [
+    "/web/register/",
+    "/web/send/email/",
+    "/web/login/",
+    "/web/login/email/",
+    "/web/image/code/",
+    "/web/index/",
+    "/web/price/",
+]
 
 try:
     from .local_settings import *
