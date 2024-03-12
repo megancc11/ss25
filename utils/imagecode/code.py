@@ -4,6 +4,7 @@ from PIL import Image, ImageDraw, ImageFont, ImageFilter
 import random
 import os
 
+
 def check_code(width=120, height=30, char_length=5, font_size=28):
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     font_file = os.path.join(base_dir, 'imagecode', 'Monaco.ttf')

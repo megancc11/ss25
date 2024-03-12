@@ -2,11 +2,10 @@
 # -*- coding:utf-8 -*-
 from django import forms
 class BootStrap(object):
-    bootstrap_class_exclude = []
+    bootstrap_class_exclude = []#支持部分表单插件不使用样式
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)# 执行父类的__init__方法
         # 循环ModelForm中的所有字段，给每个字段的插件设置
-
         for name, field in self.fields.items():
             # 不具有样式的表单
             if name in self.bootstrap_class_exclude:
@@ -14,7 +13,7 @@ class BootStrap(object):
             old_class = field.widget.attrs.get('class', "")
             field.widget.attrs['class'] = '{} form-control'.format(old_class)
             field.widget.attrs['placeholder'] = '请输入%s' % (field.label,)
-
+            #所有的插件都可以加attrs属性
 
 class BootStrapModelForm(BootStrap, forms.ModelForm):
     pass

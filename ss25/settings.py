@@ -57,8 +57,8 @@ ROOT_URLCONF = 'ss25.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': []
-        ,
+        'DIRS': [],
+        # 'DIRS': [BASE_DIR, '/templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -145,6 +145,11 @@ TENCENT_SMS_TEMPLATE={
 MAIL_HOST = "***"  # 默认，设置服务器
 MAIL_USER = "***"  # 用户名
 MAIL_PASSWORD = "***"  # 服务器授权码
+
+#腾讯cos ID和KEY配置
+TENCENT_COS_ID = "COS的secret_id"
+TENCENT_COS_KEY = "COS的secret_key"
+BUCKET_SUFFIX="COS桶的后缀-数字"
 
 
 # ########### 登录白名单：无需登录就可以访问的页面 ###########

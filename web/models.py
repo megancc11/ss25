@@ -8,6 +8,9 @@ class UserInfo(models.Model):
     email=models.EmailField(verbose_name="邮箱",max_length=32)
     mobile_phone = models.CharField(verbose_name="手机号", max_length=32)
     password = models.CharField(verbose_name="密码", max_length=32)
+
+    # price_policy = models.ForeignKey(verbose_name='价格策略', to='PricePolicy', null=True, blank=True)#提升查询速度
+
     def __str__(self):
         return  self.username
 
@@ -40,7 +43,7 @@ class Transaction(models.Model):
     order = models.CharField(verbose_name='订单号', max_length=64, unique=True)  # 唯一索引
 
     user = models.ForeignKey(verbose_name='用户', to='UserInfo',on_delete=models.CASCADE)#有外键约束,自动删除级链字段
-    price_policy = models.ForeignKey(verbose_name='价格策略', to='PricePolicy',on_delete=models.CASCADE)#有外键约束,自动删除级链字段)
+    price_policy = models.ForeignKey(verbose_name='价格策略', to='PricePolicy',on_delete=models.CASCADE)#有外键约束,自动删除级链字段
 
     count = models.IntegerField(verbose_name='数量（年）', help_text='0表示无限期')
 
@@ -75,32 +78,34 @@ class Project(models.Model):
     creator = models.ForeignKey(verbose_name='创建者', to='UserInfo',on_delete=models.CASCADE)#有外键约束,自动删除级链字段)
     create_datetime = models.DateTimeField(verbose_name='创建时间', auto_now_add=True)
 
-    bucket = models.CharField(verbose_name='cos桶', max_length=128)
-    region = models.CharField(verbose_name='cos区域', max_length=32)
+    bucket = models.CharField(verbose_name='cos桶', max_length=128)#为项目创建的专属桶
+    region = models.CharField(verbose_name='cos区域', max_length=32)#桶放在什么区域
 
     # 查询：可以省事；
     # 增加、删除、修改：无法完成
+    # through第三张表
     # project_user = models.ManyToManyField(to='UserInfo',through="ProjectUser",through_fields=('project','user'))
 
 
 class ProjectUser(models.Model):
-    """ 项目参与者 """
-    project = models.ForeignKey(verbose_name='项目', to='Project',on_delete=models.CASCADE)#有外键约束,自动删除级链字段)
-    user = models.ForeignKey(verbose_name='参与者', to='UserInfo',on_delete=models.CASCADE)#有外键约束,自动删除级链字段)
+    """ 默认设计为项目参与者,非项目创建者"""
+    project = models.ForeignKey(verbose_name='项目', to='Project',on_delete=models.CASCADE)#有外键约束,自动删除级链字段
+    user = models.ForeignKey(verbose_name='参与者', to='UserInfo',on_delete=models.CASCADE)#有外键约束,自动删除级链字段
     star = models.BooleanField(verbose_name='星标', default=False)
 
     create_datetime = models.DateTimeField(verbose_name='加入时间', auto_now_add=True)
 
 
 class Wiki(models.Model):
-    project = models.ForeignKey(verbose_name='项目', to='Project',on_delete=models.CASCADE)#有外键约束,自动删除级链字段)
+    project = models.ForeignKey(verbose_name='项目', to='Project',on_delete=models.CASCADE)#有外键约束,自动删除级链字段
     title = models.CharField(verbose_name='标题', max_length=32)
     content = models.TextField(verbose_name='内容')
 
-    depth = models.IntegerField(verbose_name='深度', default=1)
+    depth = models.IntegerField(verbose_name='深度', default=1)#为了让父目录提前出现
 
-    # 子关联
-    parent = models.ForeignKey(verbose_name='父文章', to="Wiki", null=True, blank=True, related_name='children',on_delete=models.CASCADE)#有外键约束,自动删除级链字段)
+    # 子关联,自关联
+    parent = models.ForeignKey(verbose_name='父文章', to="Wiki", null=True, blank=True,
+                               related_name='children',on_delete=models.CASCADE)#有外键约束,自动删除级链字段)
 
     def __str__(self):
         return self.title
