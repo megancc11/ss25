@@ -1,0 +1,201 @@
+{% extends 'web/layout/manage.html' %}
+{% load static %}
+{% block css %}
+    <style>
+        .panel-default .panel-heading {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+        }
+
+        .panel-default > .panel-heading a {
+            text-decoration: none;
+        }
+
+        .panel-default > .panel-heading span {
+            padding: 0 5px;
+        }
+
+        .panel-default > .panel-heading .function .upload {
+            overflow: hidden;
+        }
+
+        .panel-default > .panel-heading .function .upload input {
+            opacity: 0; /*让文件上传的INPUT框透明达到不显示效果*/
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 76px;
+            left: -2px;
+            overflow: hidden;
+        }
+
+        .upload-progress {
+            position: fixed;
+            right: 2px;
+            bottom: 2px;
+            width: 400px;
+        }
+
+        .upload-progress .progress-error {
+            color: red;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="container-fluid">
+
+        <div class="panel panel-default" style="margin-top: 20px;">
+            <!-- Default panel contents -->
+            <div class="panel-heading">
+                <div>
+                    <a href="#">
+                        <i class="fa fa-home" aria-hidden="true"></i>
+                        <span>文件库</span>
+                    </a>
+                </div>
+                <div class="function">
+                    <div class="btn btn-primary btn-xs upload" style="position: relative">
+                        <div><i class="fa fa-upload" aria-hidden="true"></i> 上传文件</div>
+                        <input type="file" multiple name="uploadFile" id="uploadFile">
+                    </div>
+                    <a class="btn btn-success btn-xs">
+                        <i class="fa fa-plus-circle" aria-hidden="true"></i> 新建文件夹
+                    </a>
+                </div>
+            </div>
+            <!-- Table -->
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>名称</th>
+                    <th>文件大小</th>
+                    <th>更新者</th>
+                    <th>更新时间</th>
+                    <th>操作</th>
+                </tr>
+                </thead>
+                <tbody id="rowList">
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <div id="uploadProgress" class="upload-progress hide">
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <i class="fa fa-cloud-upload" aria-hidden="true"></i> 上传进度
+            </div>
+
+            <table class="table">
+                <tbody id="progressList">
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="hide">
+        <table id="progressTemplate">
+            <tr>
+                <td>
+                    <div class="name"></div>
+                    <div class="progress">
+                        <div class="progress-bar progress-bar-success progress-bar-striped" role="progressbar"
+                             aria-valuenow="0"
+                             aria-valuemin="0"
+                             aria-valuemax="100" style="width: 0%;">
+                            0%
+                        </div>
+                    </div>
+                    <div class="progress-error"></div>
+                </td>
+            </tr>
+        </table>
+    </div>
+{% endblock %}
+
+{% block js %}
+    <script src="{% static 'web/js/cos-js-sdk-v5.min.js' %}"></script>
+    <script>
+
+        var COS_CREDENTIAL = "{% url 'cos_credential_test' project_id=15 %}";
+        var CURRENT_FOLDER_ID = "1";
+
+        $(function () {
+            bindUploadFile();
+        });
+
+
+        function bindUploadFile() {
+            $('#uploadFile').change(function () {
+                $('#progressList').empty();
+                var fileList = $(this)[0].files;
+
+                // 获取本次要上传的每个文件 名称&大小
+                var checkFileList = [];
+                $.each(fileList, function (index, fileObject) {
+                    //console.log(fileObject.name)//打印用户选择上传的文件列表
+                    checkFileList.push({'name': fileObject.name, 'size': fileObject.size})
+                });
+
+                // 把这些数据发送到django后台：Django后台进行容量的校验，如果么有问题则返回临时凭证；否则返回错误信息；
+                var cos_credential = new COS({
+                    getAuthorization: function (options, callback) {
+                        $.post(COS_CREDENTIAL, JSON.stringify(checkFileList), function (res) {
+                            if (res.status) {
+                                var credentials = res.data && res.data.credentials;
+                                callback({
+                                    TmpSecretId: credentials.tmpSecretId,
+                                    TmpSecretKey: credentials.tmpSecretKey,
+                                    XCosSecurityToken: credentials.sessionToken,
+                                    StartTime: res.data.startTime,
+                                    ExpiredTime: res.data.expiredTime
+                                });
+
+                                $('#uploadProgress').removeClass('hide');
+                            } else {
+                                alert(res.error);//上传成功
+                            }
+                        });
+                    }
+                });
+
+                // 上传文件（上传之前先获取临时凭证）
+                $.each(fileList, function (index, fileObject) {
+                    var fileName = fileObject.name
+                    var fileSize = fileObject.size;
+                    var key = (new Date()).getTime() + "_" + fileName;
+
+                    //上传进度条
+                    var tr = $('#progressTemplate').find('tr').clone();
+                    tr.find('.name').text(fileName);
+                    $('#progressList').append(tr);
+
+                    // 上传文件（异步）
+                    cos_credential.putObject({
+                        Bucket: '13959195082-1710229382-1324595248', /* 必须 */
+                        Region: 'ap-chengdu', /* 存储桶所在地域，必须字段 */
+                        Key: key, /* 必须 */
+                        Body: fileObject, // 上传文件对象
+                        onProgress: function (progressData) {
+                            //console.log("文件上传进度--->",filename,JSON.stringify(progressData))
+                            var percent = progressData.percent * 100 + '%';
+                            tr.find('.progress-bar').text(percent);
+                            tr.find('.progress-bar').css('width', percent);
+                        }
+                    }, function (err, data) {
+                        console.log(err || data);
+                    });
+
+                })
+
+
+            });
+        }
+
+
+    </script>
+{% endblock %}

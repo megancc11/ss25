@@ -1,11 +1,5 @@
-# !/usr/bin/env python
-# -*- coding:utf-8 -*-
 from django.template import Library
-from django.urls import reverse
-from web import models
-
 register = Library()
-
 
 @register.simple_tag
 def user_space(size):

@@ -17,7 +17,7 @@ client = CosS3Client(config)
 
 response = client.upload_file(
     Bucket='test'+settings.BUCKET_SUFFIX,#把桶的后缀要改成和你手动创建桶的后缀一样
-    LocalFilePath='test.jpg',  # 本地文件的路径
+    LocalFilePath='test.jpg',  # 本地文件的路径，也可以用body参数来替代
     Key='test2.jpg'  # 上传到桶之后的文件名
 )
 print(response['ETag'])

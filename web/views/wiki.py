@@ -92,6 +92,7 @@ def wiki_edit(request, project_id, wiki_id):
 @csrf_exempt
 def wiki_upload(request, project_id):
     """ markdown插件上传图片 """
+    # print(request.FILES)#markdown上传上来的图片
     result = {
         'success': 0,
         'message': None,
@@ -103,14 +104,20 @@ def wiki_upload(request, project_id):
         result['message'] = "文件不存在"
         return JsonResponse(result)
 
-    ext = image_object.name.rsplit('.')[-1]
-    key = "{}.{}".format(uid(request.tracer.user.mobile_phone), ext)
+    #文件对象上传到当前项目的桶中
+    ext = image_object.name.rsplit('.')[-1]#获取后缀名
+
+    key = str(request.tracer.user.username).lower()+'_'+"{}.{}".format(uid(request.tracer.user.mobile_phone), ext)#防止文件名重复，生成一个随机的文件名
     image_url = upload_file(
         request.tracer.project.bucket,
         request.tracer.project.region,
-        image_object,
-        key
+        image_object,# 文件对象，设置参数body即可
+        key # 上传到桶之后的文件名
     )
+    #通知markdown图片上传成功
     result['success'] = 1
     result['url'] = image_url
+    # print(image_url)
     return JsonResponse(result)
+
+

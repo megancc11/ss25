@@ -14,5 +14,6 @@ def md5(string):
 
 
 def uid(string):
+    #文件名称随机生成，防止名称重复
     data = "{}-{}".format(str(uuid.uuid4()), string)
     return md5(data)

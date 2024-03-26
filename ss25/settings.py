@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/3.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.0/ref/settings/
 """
-
+import datetime
 import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -109,13 +109,20 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+# TIME_ZONE = 'UTC'#datetime.datetime.utcnow()和datetime.datetime.now()一致
+
+TIME_ZONE ='Asia/Shanghai'#datetime.datetime.utcnow()和datetime.datetime.now()不一致
+
+# 影响自动生成数据库时间字段；
+#       USE_TZ = True，创建UTC时间写入到数据库。
+#       USE_TZ = False，根据TIME_ZONE设置的时区进行创建时间并写入数据库
+USE_TZ = False
 
 USE_I18N = True
 
 USE_L10N = True
 
-USE_TZ = True
+
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
@@ -162,7 +169,8 @@ WHITE_REGEX_URL_LIST = [
     "/web/index/",
     "/web/price/",
 ]
-
+#markdown图片可以显示的配置
+X_FRAME_OPTIONS ='SAMEORIGIN'# 表示该页面可以在相同城名页面的franme展示
 try:
     from .local_settings import *
 except ImportError:

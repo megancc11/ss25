@@ -5,35 +5,39 @@ import datetime
 import collections
 from django.shortcuts import render
 from django.http import JsonResponse
-from django.db.models import Count
-from django.db.models import Count
+from django.db.models import Count,Sum,Avg
 from web import models
 
 
 def dashboard(request, project_id):
     """ 概览 """
-
     # 问题数据处理
-    # status_dict = collections.OrderedDict()
-    # for key, text in models.Issues.status_choices:
-    #     status_dict[key] = {'text': text, 'count': 0}
-    #
-    # issues_data = models.Issues.objects.filter(project_id=project_id).values('status').annotate(ct=Count('id'))
-    # for item in issues_data:
-    #     status_dict[item['status']]['count'] = item['ct']
-    #
-    # # 项目成员
-    # user_list = models.ProjectUser.objects.filter(project_id=project_id).values('user_id', 'user__username')
-    #
-    # # 最近的10个问题
-    # top_ten = models.Issues.objects.filter(project_id=project_id, assign__isnull=False).order_by('-id')[0:10]
-    #
-    # context = {
-    #     'status_dict': status_dict,
-    #     'user_list': user_list,
-    #     'top_ten_object': top_ten
-    # }
-    context={}
+    status_dict = collections.OrderedDict()#有序字典
+    for key, text in models.Issues.status_choices:
+        status_dict[key] = {'text': text, 'count': 0}
+
+    issues_data = models.Issues.objects.filter(project_id=project_id).values('status').annotate(ct=Count('id'))
+    #annotate里面跟聚合条件，语句等价于
+    #select status,count(distinct id) as cnt from web_issues
+    #where project_id=***
+    #group by status
+
+
+    for item in issues_data:
+        status_dict[item['status']]['count'] = item['ct']
+
+
+    # 项目成员
+    user_list = models.ProjectUser.objects.filter(project_id=project_id).values('user_id', 'user__username')
+
+    # 最近指派的10个问题
+    top_ten = models.Issues.objects.filter(project_id=project_id, assign__isnull=False).order_by('-id')[0:10]
+
+    context = {
+        'status_dict': status_dict,
+        'user_list': user_list,
+        'top_ten_object': top_ten
+    }
     return render(request, 'web/dashboard.html', context)
 
 

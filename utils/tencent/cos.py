@@ -5,7 +5,6 @@ from qcloud_cos import CosS3Client
 from django.conf import settings
 from qcloud_cos.cos_exception import CosServiceError
 
-
 def create_bucket(bucket, region="ap-chengdu"):
     """
     创建桶
@@ -20,7 +19,7 @@ def create_bucket(bucket, region="ap-chengdu"):
         Bucket=bucket,
         ACL="public-read"  # private  /  public-read / public-read-write
     )
-
+    #解决跨域问题，跨域访问CORS设置，用于JS上传文件至COS使用
     cors_config = {
         'CORSRule': [
             {
@@ -37,7 +36,6 @@ def create_bucket(bucket, region="ap-chengdu"):
         CORSConfiguration=cors_config
     )
 
-
 def upload_file(bucket, region, file_object, key):
     config = CosConfig(Region=region, SecretId=settings.TENCENT_COS_ID, SecretKey=settings.TENCENT_COS_KEY)
     client = CosS3Client(config)
@@ -48,12 +46,13 @@ def upload_file(bucket, region, file_object, key):
         Key=key  # 上传到桶之后的文件名
     )
 
-    # https://wangyang-1251317460.cos.ap-chengdu.myqcloud.com/p1.png
+    # https://aaaa-999999.cos.ap-chengdu.myqcloud.com/p1.png
 
-    return "https://{}.cos.{}.myqcloud.com/{}".format(bucket, region, key)
+    return "https://{}.cos.{}.myqcloud.com/{}".format(bucket, region, key)#返回cos的文件路径
 
 
 def delete_file(bucket, region, key):
+    """删除单个文件"""
     config = CosConfig(Region=region, SecretId=settings.TENCENT_COS_ID, SecretKey=settings.TENCENT_COS_KEY)
     client = CosS3Client(config)
 
@@ -62,20 +61,8 @@ def delete_file(bucket, region, key):
         Key=key
     )
 
-
-def check_file(bucket, region, key):
-    config = CosConfig(Region=region, SecretId=settings.TENCENT_COS_ID, SecretKey=settings.TENCENT_COS_KEY)
-    client = CosS3Client(config)
-
-    data = client.head_object(
-        Bucket=bucket,
-        Key=key
-    )
-
-    return data
-
-
 def delete_file_list(bucket, region, key_list):
+    """批量删除文件"""
     config = CosConfig(Region=region, SecretId=settings.TENCENT_COS_ID, SecretKey=settings.TENCENT_COS_KEY)
     client = CosS3Client(config)
     objects = {
@@ -87,6 +74,17 @@ def delete_file_list(bucket, region, key_list):
         Delete=objects
     )
 
+def check_file(bucket, region, key):
+    """校验文件是否合法"""
+    config = CosConfig(Region=region, SecretId=settings.TENCENT_COS_ID, SecretKey=settings.TENCENT_COS_KEY)
+    client = CosS3Client(config)
+
+    data = client.head_object(
+        Bucket=bucket,
+        Key=key
+    )
+
+    return data
 
 def credential(bucket, region):
     """ 获取cos上传临时凭证 """
@@ -109,7 +107,7 @@ def credential(bucket, region):
         'allow_prefix': '*',
         # 密钥的权限列表。简单上传和分片需要以下的权限，其他权限列表请看 https://cloud.tencent.com/document/product/436/31923
         'allow_actions': [
-            # "name/cos:PutObject",
+            # "name/cos:PutObject",#上传权限
             # 'name/cos:PostObject',
             # 'name/cos:DeleteObject',
             # "name/cos:UploadPart",
@@ -125,7 +123,6 @@ def credential(bucket, region):
     result_dict = sts.get_credential()
     return result_dict
 
-
 def delete_bucket(bucket, region):
     """ 删除桶 """
     # 删除桶中所有文件
@@ -137,7 +134,8 @@ def delete_bucket(bucket, region):
     try:
         # 找到文件 & 删除
         while True:
-            part_objects = client.list_objects(bucket)
+             #找到桶中的所有文件
+            part_objects = client.list_objects(bucket)#单次最多获取1000个文件
 
             # 已经删除完毕，获取不到值
             contents = part_objects.get('Contents')
@@ -151,20 +149,29 @@ def delete_bucket(bucket, region):
             }
             client.delete_objects(bucket, objects)
 
+            #是否截断
             if part_objects['IsTruncated'] == "false":
                 break
 
         # 找到碎片 & 删除
         while True:
-            part_uploads = client.list_multipart_uploads(bucket)
+            part_uploads = client.list_multipart_uploads(bucket)#获取Bucket中正在进行的分块上传
+
+            # 已经删除完毕，获取不到值
             uploads = part_uploads.get('Upload')
             if not uploads:
                 break
+
             for item in uploads:
                 client.abort_multipart_upload(bucket, item['Key'], item['UploadId'])
+
+            # 是否截断
             if part_uploads['IsTruncated'] == "false":
                 break
 
+        #删除空桶
         client.delete_bucket(bucket)
+
+    #如果桶不存在，不处理
     except CosServiceError as e:
         pass

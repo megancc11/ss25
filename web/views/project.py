@@ -51,8 +51,8 @@ def project_list(request):
     form = ProjectModelForm(request, data=request.POST)
     if form.is_valid():
         name = form.cleaned_data['name']
-        # 1. 为项目创建一个桶,桶的命名规则：手机号+当前时间戳+桶后缀字符串,不能加项目名称因为桶命不支持中文，存储桶名称必须由数字、小写字母和 - 组成
-        bucket = "{}-{}".format(request.tracer.user.mobile_phone, str(int(time.time())))+settings.BUCKET_SUFFIX
+        # 1. 为项目创建一个桶,桶的命名规则：用户邮箱前缀+当前时间戳+桶后缀字符串,不能加项目名称因为桶命不支持中文，存储桶名称必须由数字、小写字母和 - 组成
+        bucket = "{}-{}".format(request.tracer.user.email.split("@")[0], str(int(time.time())))+settings.BUCKET_SUFFIX
         region = 'ap-chengdu'
         create_bucket(bucket, region)
 
@@ -63,11 +63,11 @@ def project_list(request):
         form.instance.creator = request.tracer.user
         instance = form.save()
 
-        # 3.项目初始化问题类型
-        # issues_type_object_list = []
-        # for item in models.IssuesType.PROJECT_INIT_LIST:  # ["任务", '功能', 'Bug']
-        #     issues_type_object_list.append(models.IssuesType(project=instance, title=item))
-        # models.IssuesType.objects.bulk_create(issues_type_object_list)
+        #3.项目初始化问题类型
+        issues_type_object_list = []
+        for item in models.IssuesType.PROJECT_INIT_LIST:  # ["任务", '功能', 'Bug']
+            issues_type_object_list.append(models.IssuesType(project=instance, title=item))
+        models.IssuesType.objects.bulk_create(issues_type_object_list)
 
         return JsonResponse({'status': True})
 
@@ -97,3 +97,6 @@ def project_unstar(request, project_type, project_id):
         return redirect('project_list')
 
     return HttpResponse('请求错误')
+
+def upload_js(request):
+    return render(request, 'web/js测试.html')

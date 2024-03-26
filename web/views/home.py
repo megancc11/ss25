@@ -19,7 +19,7 @@ def price(request):
     """ 套餐 """
     # 获取套餐
     policy_list = models.PricePolicy.objects.filter(category=2)
-    return render(request, 'price.html', {'policy_list': policy_list})
+    return render(request, 'web/price.html', {'policy_list': policy_list})
 
 
 def payment(request, policy_id):
@@ -67,13 +67,12 @@ def payment(request, policy_id):
     }
     conn = get_redis_connection()
     key = 'payment_{}'.format(request.tracer.user.mobile_phone)
-    # conn.set(key, json.dumps(context), nx=60 * 30)
-    conn.set(key, json.dumps(context), ex=60 * 30)  # nx参数写错了，应该是ex（表示超时时间） ps：nx=True,表示redis中已存在key，再次执行时候就不会再设置了。
+    conn.set(key, json.dumps(context), ex=60 * 30)  # ex（表示超时时间） ps：nx=True,表示redis中已存在key，再次执行时候就不会再设置了。
 
     context['policy_object'] = policy_object
     context['transaction'] = _object
 
-    return render(request, 'payment.html', context)
+    return render(request, 'web/payment.html', context)
 
 
 """
@@ -156,6 +155,7 @@ def pay(request):
     conn = get_redis_connection()
     key = 'payment_{}'.format(request.tracer.user.mobile_phone)
     context_string = conn.get(key)
+
     if not context_string:
         return redirect('price')
     context = json.loads(context_string.decode('utf-8'))
@@ -163,7 +163,9 @@ def pay(request):
     # 1. 数据库中生成交易记录（待支付）
     #     等支付成功之后，我们需要把订单的状态更新为已支付、开始&结束时间
     order_id = uid(request.tracer.user.mobile_phone)
+
     total_price = context['total_price']
+
     models.Transaction.objects.create(
         status=1,
         order=order_id,
@@ -187,6 +189,7 @@ def pay(request):
         total_amount=total_price
     )
     pay_url = "{}?{}".format(settings.ALI_GATEWAY, query_params)
+
     return redirect(pay_url)
 
 
@@ -202,11 +205,12 @@ def pay_notify(request):
 
     if request.method == 'GET':
         # 只做跳转，判断是否支付成功了，不做订单的状态更新。
-        # 支付吧会讲订单号返回：获取订单ID，然后根据订单ID做状态更新 + 认证。
+        # 支付宝会讲订单号返回：获取订单ID，然后根据订单ID做状态更新 + 认证。
         # 支付宝公钥对支付给我返回的数据request.GET 进行检查，通过则表示这是支付宝返还的接口。
         params = request.GET.dict()
         sign = params.pop('sign', None)
         status = ali_pay.verify(params, sign)
+        print(status)
         if status:
             """
             current_datetime = datetime.datetime.now()
@@ -220,7 +224,7 @@ def pay_notify(request):
             """
             return HttpResponse('支付完成')
         return HttpResponse('支付失败')
-    else:
+    else:#POST请求更新订单状态
         from urllib.parse import parse_qs
         body_str = request.body.decode('utf-8')
         post_data = parse_qs(body_str)
@@ -232,7 +236,7 @@ def pay_notify(request):
         status = ali_pay.verify(post_dict, sign)
         if status:
             current_datetime = datetime.datetime.now()
-            out_trade_no = post_dict['out_trade_no']
+            out_trade_no = post_dict['out_trade_no']#返回的订单号
             _object = models.Transaction.objects.filter(order=out_trade_no).first()
 
             _object.status = 2

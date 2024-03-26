@@ -16,24 +16,24 @@ config = CosConfig(Region=region, SecretId=secret_id, SecretKey=secret_key)
 client = CosS3Client(config)
 
 # client.delete_object(
-#     Bucket='wangyang-1251317460',
+#     Bucket='aa',
 #     Key='p1.png'
 # )
 
-
+#批量删除
 objects = {
     "Quiet": "true",
     "Object": [
         {
-            "Key": "test.jpg"
+            "Key": "a.txt"
         },
         {
-            "Key": "test2.jpg"
+            "Key": "快捷键.txt"
         }
     ]
 }
 
 client.delete_objects(
-    Bucket='test'+settings.BUCKET_SUFFIX,#把桶的后缀要改成和你手动创建桶的后缀一样
+    Bucket='13959195082-1710229382-1324595248',#把桶的后缀要改成和你手动创建桶的后缀一样
     Delete=objects
 )
